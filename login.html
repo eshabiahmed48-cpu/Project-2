@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Tahoma', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .login-container h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-login:hover {
+            background: #5a67d8;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+            display: none;
+        }
+        
+        .error-message.show {
+            display: block;
+        }
+        
+        .loading {
+            text-align: center;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .loading span {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #667eea;
+            border-radius: 50%;
+            margin: 0 3px;
+            animation: loading 1.4s infinite ease-in-out both;
+        }
+        
+        .loading span:nth-child(1) { animation-delay: -0.32s; }
+        .loading span:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes loading {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        .footer-text {
+            text-align: center;
+            margin-top: 20px;
+            color: #777;
+        }
+        
+        .footer-text a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>تسجيل الدخول</h2>
+        
+        <div id="errorMessage" class="error-message"></div>
+        
+        <form id="loginForm" method="POST">
+            <div class="form-group">
+                <label for="email">البريد الإلكتروني</label>
+                <input type="email" id="email" name="email" placeholder="example@domain.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">كلمة المرور</label>
+                <input type="password" id="password" name="password" placeholder="********" required>
+            </div>
+            
+            <button type="submit" class="btn-login">تسجيل الدخول</button>
+        </form>
+        
+        <div id="loading" class="loading">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <div class="footer-text">
+            ليس لديك حساب؟ <a href="#">إنشاء حساب جديد</a>
+        </div>
+    </div>
+
+    <script>
+        // محاكاة بيانات المستخدمين (في التطبيق الحقيقي سيتم الاتصال بخادم)
+        const users = [
+            {
+                id: 1,
+                fullname: 'أحمد محمد',
+                email: 'ahmed@example.com',
+                password: 'password123',
+                status: 'active'
+            },
+            {
+                id: 2,
+                fullname: 'سارة علي',
+                email: 'sara@example.com',
+                password: 'sara123',
+                status: 'active'
+            }
+        ];
+
+        // التحقق من حالة الجلسة (محاكاة)
+        function isLoggedIn() {
+            return sessionStorage.getItem('user_id') !== null;
+        }
+
+        // التحقق من تسجيل الدخول مسبقاً
+        if (isLoggedIn()) {
+            window.location.href = 'home.html';
+        }
+
+        const loginForm = document.getElementById('loginForm');
+        const errorMessage = document.getElementById('errorMessage');
+        const loading = document.getElementById('loading');
+        const submitBtn = document.querySelector('.btn-login');
+
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // إخفاء الرسائل السابقة
+            errorMessage.classList.remove('show');
+            errorMessage.textContent = '';
+            
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            
+            // التحقق من الحقول الفارغة
+            if (!email || !password) {
+                showError('الرجاء ملء جميع الحقول');
+                return;
+            }
+            
+            // إظهار مؤشر التحميل
+            loading.classList.add('show');
+            submitBtn.disabled = true;
+            
+            // محاكاة طلب الخادم (في التطبيق الحقيقي سيتم استخدام fetch أو axios)
+            setTimeout(() => {
+                loading.classList.remove('show');
+                submitBtn.disabled = false;
+                
+                // البحث عن المستخدم
+                const user = users.find(u => u.email === email);
+                
+                if (!user) {
+                    showError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+                    return;
+                }
+                
+                // التحقق من كلمة المرور (في التطبيق الحقيقي سيتم التحقق من التشفير)
+                if (user.password !== password) {
+                    showError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+                    return;
+                }
+                
+                // التحقق من حالة الحساب
+                if (user.status === 'inactive') {
+                    showError('الحساب معطل، يرجى التواصل مع الدعم');
+                    return;
+                }
+                
+                // تسجيل الدخول ناجح
+                sessionStorage.setItem('user_id', user.id);
+                sessionStorage.setItem('user_fullname', user.fullname);
+                
+                // في التطبيق الحقيقي، سيتم توجيه المستخدم إلى home.php
+                window.location.href = 'home.html';
+                
+            }, 1500); // محاكاة زمن استجابة الخادم
+        });
+        
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+            
+            // إخفاء الرسالة بعد 5 ثواني
+            setTimeout(() => {
+                errorMessage.classList.remove('show');
+            }, 5000);
+        }
+        
+        // دالة مساعدة لتسجيل الخروج (يمكن إضافتها في أي صفحة)
+        function logout() {
+            sessionStorage.removeItem('user_id');
+            sessionStorage.removeItem('user_fullname');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
